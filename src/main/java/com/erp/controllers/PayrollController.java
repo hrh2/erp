@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/payroll")
+@RequestMapping("/payroll")
 @RequiredArgsConstructor
 @Tag(name = "Payroll Management", description = "APIs for managing payroll")
 @SecurityRequirement(name = "bearerAuth")
@@ -84,7 +84,6 @@ public class PayrollController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get payslip by ID")
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     public ResponseEntity<PayslipResponseDTO> getPayslipById(@PathVariable UUID id) {
         Payslip payslip = payrollService.findPayslipById(id);
         return ResponseEntity.ok(convertToResponseDTO(payslip));

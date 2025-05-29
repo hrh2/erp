@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Salary Payment Notification</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #28a745; padding-bottom: 15px; margin-bottom: 25px; }
+        .logo { text-align: center; margin-bottom: 15px; }
+        h1 { color: #28a745; font-size: 24px; font-weight: 600; margin-top: 0; }
+        .payment-details { font-size: 18px; margin: 25px 0; padding: 15px; background-color: #f0fff5; border-radius: 5px; border: 1px solid #28a745; }
+        .payment-details p { margin: 10px 0; }
+        .message { font-size: 16px; line-height: 1.6; margin-bottom: 20px; color: #444; }
+        .footer { margin-top: 40px; padding-top: 20px; font-size: 13px; color: #777; text-align: center; border-top: 1px solid #eee; }
+        .download-btn { display: inline-block; background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+        .download-btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo"><span style="font-size: 26px; font-weight: bold; color: #28a745;">Enterprise Resource Planning</span></div>
+        <h1>Salary Payment Notification</h1>
+    </div>
+
+    <p class="message" th:text="'Dear ' + ${firstName} + ','"></p>
+    <p class="message">Your salary has been processed and credited to your account. Please find the details below:</p>
+
+    <div class="payment-details">
+        <p><strong>Period:</strong> <span th:text="${monthYear}"></span></p>
+        <p><strong>Amount:</strong> <span th:text="${amount}"></span></p>
+        <p><strong>Employee ID:</strong> <span th:text="${employeeId}"></span></p>
+    </div>
+
+    <p class="message">Thank you for your continued service.</p>
+
+    <div style="text-align: center;">
+        <a th:href="${baseUrl + '/payroll/' + payslipId}" class="download-btn" target="_blank">Download Payslip</a>
+    </div>
+
+    <div class="footer">
+        <p>If you have any questions regarding this payment, please contact your HR department.</p>
+        <p>&copy; <span th:text="${currentYear}">2025</span> Enterprise Resource Planning System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

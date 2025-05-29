@@ -2,6 +2,8 @@
 
 A comprehensive system for managing enterprise resources including employee management, payroll processing, and internal messaging with secure authentication and role-based access control.
 
+> **Note:** This README contains diagrams created with [Mermaid](https://mermaid-js.github.io/mermaid/), which renders automatically on platforms like GitHub. If you're viewing this on a platform that doesn't support Mermaid, you may need to use a Mermaid viewer or plugin to see the diagrams properly.
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -12,6 +14,7 @@ A comprehensive system for managing enterprise resources including employee mana
 - [Project Structure](#project-structure)
 - [API Endpoints](#api-endpoints)
 - [Database Schema](#database-schema)
+- [Entity Relationship Diagram (ERD)](#entity-relationship-diagram-erd)
 - [Setup and Installation](#setup-and-installation)
 - [Security Features](#security-features)
 
@@ -31,22 +34,31 @@ Key features include:
 
 ## System Architecture
 
-```
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │      │                 │      │                 │
-│  Client         │ ──── │  API Layer      │ ──── │  Service Layer  │
-│  (Frontend)     │      │  (Controllers)  │      │  (Business      │
-│                 │      │                 │      │   Logic)        │
-└─────────────────┘      └─────────────────┘      └─────────────────┘
-                                                          │
-                                                          │
-                                                          ▼
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │      │                 │      │                 │
-│  External       │ ──── │  Repository     │ ──── │  Data Layer     │
-│  Services       │      │  Layer          │      │  (Models)       │
-│  (Email, etc.)  │      │                 │      │                 │
-└─────────────────┘      └─────────────────┘      └─────────────────┘
+```mermaid
+flowchart TD
+    Client["Client\n(Frontend)"] <--> Controllers["API Layer\n(Controllers)"]
+    Controllers <--> Services["Service Layer\n(Business Logic)"]
+    Services <--> Repositories["Repository Layer"]
+    Services <--> ExternalServices["External Services\n(Email, etc.)"]
+    Repositories <--> Models["Data Layer\n(Models)"]
+    Models <--> Database[(Database)]
+
+    %% Styling
+    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px
+    classDef api fill:#d4f1f9,stroke:#333,stroke-width:2px
+    classDef service fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef repo fill:#ffe6cc,stroke:#333,stroke-width:2px
+    classDef model fill:#e1d5e7,stroke:#333,stroke-width:2px
+    classDef external fill:#fff2cc,stroke:#333,stroke-width:2px
+    classDef database fill:#f8cecc,stroke:#333,stroke-width:2px
+
+    class Client client
+    class Controllers api
+    class Services service
+    class Repositories repo
+    class Models model
+    class ExternalServices external
+    class Database database
 ```
 
 The ERP System follows a layered architecture:
@@ -59,34 +71,49 @@ The ERP System follows a layered architecture:
 
 ## Data Flow Diagram
 
-```
-┌──────────┐     ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│          │     │               │     │               │     │               │
-│  Client  │ ──► │  Controllers  │ ──► │   Services    │ ──► │ Repositories  │
-│          │     │               │     │               │     │               │
-└──────────┘     └───────────────┘     └───────────────┘     └───────────────┘
-     ▲                   │                     │                     │
-     │                   │                     │                     │
-     └───────────────────┘                     │                     ▼
-                                               │             ┌───────────────┐
-                                               │             │               │
-                                               └────────────►│   Database    │
-                                                             │               │
-                                                             └───────────────┘
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controllers
+    participant Services
+    participant Repositories
+    participant Database
+
+    Client->>Controllers: HTTP Request
+    Controllers->>Services: Process Request
+    Services->>Repositories: Data Operations
+    Repositories->>Database: Query/Update
+    Database-->>Repositories: Return Data
+    Repositories-->>Services: Return Results
+    Services-->>Controllers: Return Response
+    Controllers-->>Client: HTTP Response
+
+    note over Services: Business Logic Processing
+    note over Controllers: Input Validation & Response Formatting
 ```
 
 ## Authentication Flow
 
-```
-┌──────────┐     ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│          │     │               │     │               │     │               │
-│  Client  │ ──► │  Login API    │ ──► │ Authentication│ ──► │  JWT Creation │
-│          │     │               │     │   Service     │     │               │
-└──────────┘     └───────────────┘     └───────────────┘     └───────────────┘
-     ▲                                                               │
-     │                                                               │
-     └───────────────────────────────────────────────────────────────┘
-                                JWT Token
+```mermaid
+sequenceDiagram
+    participant Client
+    participant LoginAPI as "Login API"
+    participant AuthService as "Authentication Service"
+    participant JwtService as "JWT Service"
+    participant UserRepo as "User Repository"
+
+    Client->>LoginAPI: Login Request (email, password)
+    LoginAPI->>AuthService: Authenticate User
+    AuthService->>UserRepo: Find User by Email
+    UserRepo-->>AuthService: Return User
+    AuthService->>AuthService: Verify Password
+    AuthService->>JwtService: Generate JWT Tokens
+    JwtService-->>AuthService: Access & Refresh Tokens
+    AuthService-->>LoginAPI: Authentication Result
+    LoginAPI-->>Client: JWT Tokens
+
+    note over Client,LoginAPI: Subsequent requests include JWT in Authorization header
+    note over AuthService: Password verification uses BCrypt
 ```
 
 The authentication process works as follows:
@@ -230,6 +257,91 @@ The ERP System provides the following API endpoints:
 
 ## Database Schema
 
+```mermaid
+erDiagram
+    PERSON {
+        string firstName
+        string lastName
+        string phoneNumber
+        string nationalId
+    }
+
+    USER {
+        uuid id PK
+        string email UK
+        string password
+        enum accountStatus
+        boolean isVerified
+        string verificationCode
+        datetime verificationCodeGeneratedAt
+        string passwordResetCode
+        datetime passwordResetCodeGeneratedAt
+    }
+
+    ROLE {
+        uuid id PK
+        enum name
+    }
+
+    EMPLOYEE {
+        uuid id PK
+        string code UK
+        uuid user_id FK
+        date dateOfBirth
+        enum status
+    }
+
+    EMPLOYMENT {
+        uuid id PK
+        string code UK
+        uuid employee_id FK
+        string department
+        string position
+        decimal baseSalary
+        enum status
+        date joiningDate
+    }
+
+    DEDUCTION {
+        uuid id PK
+        string code UK
+        string name UK
+        decimal percentage
+    }
+
+    PAYSLIP {
+        uuid id PK
+        uuid employee_id FK
+        decimal housingAmount
+        decimal transportAmount
+        decimal employeeTaxAmount
+        decimal pensionAmount
+        decimal medicalInsuranceAmount
+        decimal otherDeductions
+        decimal grossSalary
+        decimal netSalary
+        int month
+        int year
+        enum status
+    }
+
+    MESSAGE {
+        uuid id PK
+        uuid employee_id FK
+        text message
+        string monthYear
+        datetime sentAt
+    }
+
+    USER --|> PERSON : extends
+    USER }|--|| EMPLOYEE : has
+    USER }o--o{ ROLE : has
+    EMPLOYEE ||--o{ EMPLOYMENT : has
+    EMPLOYEE ||--o{ PAYSLIP : has
+    EMPLOYEE ||--o{ MESSAGE : receives
+end
+```
+
 The ERP System uses a PostgreSQL database with the following main entities:
 
 - **users**: Stores user authentication and profile information
@@ -240,6 +352,82 @@ The ERP System uses a PostgreSQL database with the following main entities:
 - **deductions**: Stores deduction types and percentages
 - **payslips**: Stores payslip information with salary components and deductions
 - **messages**: Stores internal messages
+
+## Entity Relationship Diagram (ERD)
+
+The following diagram illustrates the relationships between the main entities in the ERP system:
+
+```mermaid
+classDiagram
+    Person <|-- User
+    User "1" -- "1" Employee : has
+    User "1" -- "0..*" Role : has
+    Employee "1" -- "0..*" Employment : has
+    Employee "1" -- "0..*" Payslip : has
+    Employee "1" -- "0..*" Message : receives
+
+    class Person {
+        +String firstName
+        +String lastName
+        +String phoneNumber
+        +String nationalId
+    }
+
+    class User {
+        +UUID id
+        +String email
+        +String password
+        +EAccountStatus accountStatus
+        +boolean isVerified
+    }
+
+    class Role {
+        +UUID id
+        +ERole name
+    }
+
+    class Employee {
+        +UUID id
+        +String code
+        +LocalDate dateOfBirth
+        +EEmployeeStatus status
+    }
+
+    class Employment {
+        +UUID id
+        +String code
+        +String department
+        +String position
+        +BigDecimal baseSalary
+        +EEmploymentStatus status
+        +LocalDate joiningDate
+    }
+
+    class Deduction {
+        +UUID id
+        +String code
+        +String name
+        +BigDecimal percentage
+    }
+
+    class Payslip {
+        +UUID id
+        +BigDecimal grossSalary
+        +BigDecimal netSalary
+        +Integer month
+        +Integer year
+        +EPayslipStatus status
+    }
+
+    class Message {
+        +UUID id
+        +String message
+        +String monthYear
+        +LocalDateTime sentAt
+    }
+```
+
+This class diagram shows the inheritance and associations between entities in the system. The arrows indicate the direction of the relationship, and the numbers indicate the cardinality (e.g., "1" to "0..*" means one-to-many relationship).
 
 ## Setup and Installation
 

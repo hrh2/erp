@@ -61,6 +61,8 @@ public class MessageServiceImpl implements IMessageService {
             variables.put("monthYear", monthYear);
             variables.put("amount", payslip.getNetSalary().toString());
             variables.put("employeeId", employee.getCode());
+            variables.put("payslipId", payslip.getId().toString());
+            variables.put("baseUrl", "http://localhost:8000/api/v1");
 
             emailService.sendEmail(
                     employee.getUser().getEmail(),
