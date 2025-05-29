@@ -266,11 +266,11 @@ erDiagram
         string nationalId
     }
 
-    USER {
+        USER {
         uuid id PK
         string email UK
         string password
-        enum accountStatus
+        string accountStatus "Enum: ACTIVE, INACTIVE, SUSPENDED"
         boolean isVerified
         string verificationCode
         datetime verificationCodeGeneratedAt
@@ -278,9 +278,15 @@ erDiagram
         datetime passwordResetCodeGeneratedAt
     }
 
+
     ROLE {
         uuid id PK
-        enum name
+        string name "Enum: ADMIN, EMPLOYEE MANAGER"
+    }
+
+    USER_ROLE {
+        uuid user_id PK, FK
+        uuid role_id PK, FK
     }
 
     EMPLOYEE {
@@ -288,7 +294,7 @@ erDiagram
         string code UK
         uuid user_id FK
         date dateOfBirth
-        enum status
+        string status "Enum : ACTIVE,TERMINATED, ON_LEAVE"
     }
 
     EMPLOYMENT {
@@ -298,7 +304,7 @@ erDiagram
         string department
         string position
         decimal baseSalary
-        enum status
+        string status "Enum: ACTIVE, INACTIVE"
         date joiningDate
     }
 
@@ -322,24 +328,34 @@ erDiagram
         decimal netSalary
         int month
         int year
-        enum status
+        string status "Enum : GENERATED,PAID,PENDING"
+    }
+
+    PAYSLIP_DEDUCTION {
+        uuid payslip_id PK, FK
+        uuid deduction_id PK, FK
+        decimal amount
     }
 
     MESSAGE {
         uuid id PK
         uuid employee_id FK
         text message
-        string monthYear
+        int month
+        int year
         datetime sentAt
     }
 
-    USER --|> PERSON : extends
-    USER }|--|| EMPLOYEE : has
-    USER }o--o{ ROLE : has
-    EMPLOYEE ||--o{ EMPLOYMENT : has
-    EMPLOYEE ||--o{ PAYSLIP : has
-    EMPLOYEE ||--o{ MESSAGE : receives
-end
+    PERSON ||--|| USER : "is extended by"
+    USER ||--|| EMPLOYEE : "has one"
+    USER ||--o{ USER_ROLE : "has roles"
+    ROLE ||--o{ USER_ROLE : "assigned to users"
+    EMPLOYEE ||--o{ EMPLOYMENT : "has employments"
+    EMPLOYEE ||--o{ PAYSLIP : "has payslips"
+    EMPLOYEE ||--o{ MESSAGE : "receives messages"
+    PAYSLIP ||--o{ PAYSLIP_DEDUCTION : "has deductions"
+    DEDUCTION ||--o{ PAYSLIP_DEDUCTION : "applies to payslips"
+
 ```
 
 The ERP System uses a PostgreSQL database with the following main entities:
