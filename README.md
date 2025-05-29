@@ -8,6 +8,7 @@ A comprehensive system for managing enterprise resources including employee mana
 - [System Architecture](#system-architecture)
 - [Data Flow Diagram](#data-flow-diagram)
 - [Authentication Flow](#authentication-flow)
+- [User Flows by Role](#user-flows-by-role)
 - [Project Structure](#project-structure)
 - [API Endpoints](#api-endpoints)
 - [Database Schema](#database-schema)
